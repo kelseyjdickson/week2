@@ -134,6 +134,62 @@ const deleteSongRatings = async (req, res, next) => {
   }
 };
 
+// For '/:songId/ratings/:ratingId endpoint
+
+const getSongRating = async (req, res, next) => {
+  try {
+    const song = await Song.findById(req.params.songId);
+    let rating = song.ratings.find((rating) =>
+      rating._id.equals(req.params.ratingId)
+    );
+    if (!rating)
+      rating = { msg: `No rating found with id: ${req.params.ratingId}` };
+    res.status(200).setHeader("Content-Type", "application/json").json(rating);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateSongRating = async (req, res, next) => {
+  const song = await Song.findById(req.params.songId);
+  let rating = song.ratings.find((rating) =>
+    rating._id.equals(req.params.ratingId)
+  );
+  if (rating) {
+    const ratingIndexPosition = song.ratings.indexOf(rating);
+    song.ratings.splice(ratingIndexPosition, 1, req.body);
+    rating = req.body;
+    await song.save();
+  } else {
+    rating = { msg: `No rating found with id: ${req.params.ratingId}` };
+  }
+  res.status(200).setHeader("Content-Type", "application/json").json(rating);
+  try {
+  } catch (err) {
+    next(err);
+  }
+};
+const deleteSongRating = async (req, res, next) => {
+  const song = await Song.findById(req.params.songId);
+  let rating = song.ratings.find((rating) =>
+    rating._id.equals(req.params.ratingId)
+  );
+  if (rating) {
+    const ratingIndexPosition = song.ratings.indexOf(rating);
+    song.ratings.splice(ratingIndexPosition, 1);
+    rating = {
+      msg: `Sucessfully deleted rating with id: ${req.params.ratingId}`,
+    };
+    await song.save();
+  } else {
+    rating = { msg: `No rating found with id: ${req.params.ratingId}` };
+  }
+  res.status(200).setHeader("Content-Type", "application/json").json(rating);
+  try {
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   getSongs,
   postSong,
@@ -144,6 +200,9 @@ module.exports = {
   getSongRatings,
   postSongRatings,
   deleteSongRatings,
+  getSongRating,
+  updateSongRating,
+  deleteSongRating,
 };
 res = {
   status: 200,
