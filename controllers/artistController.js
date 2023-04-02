@@ -1,4 +1,5 @@
 const Artist = require("../models/Artist");
+const path = require("path");
 
 const getArtists = async (req, res) => {
   const filter = {};
@@ -79,6 +80,34 @@ const deleteArtist = async (req, res, next) => {
     );
   }
 };
+const postArtistImage = async (req, res, next) => {
+  try {
+    const err = { msg: "Missing Image!" };
+    if (!req.files) next(err);
+
+    const file = req.files.file;
+
+    if (!file.mimetype.startsWith("image"))
+      throw new Error("Please upload image file type!");
+
+    if (file.size > process.env.MAX_FILE_SIZE)
+      throw new Error(`Image exceeds size of ${process.env.MAX_FILE_SIZE}`);
+
+    file.name = `photo_${req.params.artistId}${path.parse(file.name).ext}`;
+    const filePath = process.env.FILE_UPLOAD_PATH + file.name;
+
+    file.mv(filePath, async (err) => {
+      await Artist.findByIdAndUpdate(req.params.artistId, { image: file.name });
+
+      res
+        .status(200)
+        .setHeader("Content-Type", "application/json")
+        .json({ msg: "Image uploaded!" });
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   getArtists,
@@ -87,6 +116,7 @@ module.exports = {
   getArtist,
   updateArtist,
   deleteArtist,
+  postArtistImage,
 };
 res = {
   status: 200,

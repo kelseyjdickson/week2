@@ -8,6 +8,8 @@ const logger = require("./middlewares/logger");
 const errorHandler = require("./middlewares/errorHander");
 const res = require("express/lib/response");
 const connectDB = require("./config/db");
+const cookieParser = require("cookie-parser");
+const fileupload = require("express-fileupload");
 
 dotenv.config({ path: "./config/config.env" });
 
@@ -20,6 +22,10 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use(errorHandler);
+//parse cookies
+app.use(cookieParser());
+//file upload middleware
+app.use(fileupload());
 app.use(logger);
 app.use("/song", song);
 app.use("/artist", artist);

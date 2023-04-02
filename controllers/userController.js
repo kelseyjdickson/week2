@@ -24,8 +24,9 @@ const getUsers = async (req, res, next) => {
 };
 
 const postUser = async (req, res) => {
-  const users = await User.create(req.body);
-  res.status(200).setHeader("Content-Type", "application/json").json(users);
+  const user = await User.create(req.body);
+  sendTokenResponse(user, 201, res);
+
   try {
   } catch (err) {
     throw new Error(`Error creating user, ${err.message}`);
@@ -81,6 +82,21 @@ const deleteUser = async (req, res, next) => {
       `Error deleting user with id:${req.params.userId}, ${err.message}`
     );
   }
+};
+
+const sendTokenResponse = (user, statusCode, res) => {
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  res
+    .status(statusCode)
+    .cookie("token", token, options)
+    .json({ success: true, token });
 };
 
 module.exports = {
